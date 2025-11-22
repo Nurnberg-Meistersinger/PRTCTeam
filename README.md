@@ -24,6 +24,11 @@ TODO
 
 ## Stack
 
+- **Backend**: Python, PostgreSQL, FastAPI, Uvicorn
+- **Frontend**: Typesript, NextJS, Aztec.js, Azguard Wallet SDK
+- **ZKP**: Noir
+- **Contracts**: Noir, Aztec.nr, Aztec Devnet
+
 ## Installation
 
 ## Deployments
