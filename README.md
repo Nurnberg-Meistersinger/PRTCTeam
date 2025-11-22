@@ -1,2 +1,25 @@
 # PRTCTeam
-This repository contains the solution for ETHGlobal Buenos Aires 2025
+
+## Introduction
+
+## Problem
+
+## Solution
+
+## Architecture
+
+### Current Version
+
+TODO
+
+### Target Version
+
+TODO
+
+## Stack
+
+## Installation
+
+## Deployments
+
+## Future Track
