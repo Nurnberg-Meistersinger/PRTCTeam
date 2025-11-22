@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import '@/styles/global.css';
 
 import WagmiProviderHOC from "@/contexts/wagmi-provider";
+import { AztecProvider } from "@/contexts/aztec-provider";
 
 import { LocalizationProvider } from '@/components/core/localization-provider';
 import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
@@ -22,7 +23,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
           <LocalizationProvider>
               <WagmiProviderHOC cookies={cookies}>
-                <ThemeProvider>{children}</ThemeProvider>
+                <AztecProvider>
+                  <ThemeProvider>{children}</ThemeProvider>
+                </AztecProvider>
               </WagmiProviderHOC>
           </LocalizationProvider>
       </body>

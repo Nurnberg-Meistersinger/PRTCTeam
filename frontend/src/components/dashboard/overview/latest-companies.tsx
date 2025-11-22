@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -5,10 +7,10 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import type { SxProps } from '@mui/material/styles';
 import { ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
@@ -23,55 +25,89 @@ export interface Company {
 }
 
 export interface LatestCompaniesProps {
-  products?: Company[];
+  companies?: Company[];
+  selectedCompanyId?: string;
+  onCompanySelect?: (companyId: string) => void;
+  verifiedIncidentsCount?: Record<string, number>;
   sx?: SxProps;
 }
 
-export function LatestCompanies({ products = [], sx }: LatestCompaniesProps): React.JSX.Element {
+export function LatestCompanies({ 
+  companies = [], 
+  selectedCompanyId,
+  onCompanySelect,
+  verifiedIncidentsCount = {},
+  sx 
+}: LatestCompaniesProps): React.JSX.Element {
+  const handleCompanyClick = (companyId: string) => {
+    onCompanySelect?.(companyId);
+  };
+
   return (
     <Card sx={sx}>
       <CardHeader title="Companies" />
       <Divider />
       <List>
-        {products.map((product, index) => (
-          <ListItem divider={index < products.length - 1} key={product.id} sx={{ background: index === 0 ? "#ebebeb" : "#fff"}}>
-            <ListItemAvatar>
-              {product.image ? (
-                <Box component="img" src={product.image} sx={{ borderRadius: 1, height: '48px', width: '48px' }} />
-              ) : (
-                <Box
-                  sx={{
-                    borderRadius: 1,
-                    backgroundColor: 'var(--mui-palette-neutral-200)',
-                    height: '48px',
-                    width: '48px',
-                  }}
+        {companies.map((company, index) => {
+          const isSelected = company.id === selectedCompanyId;
+          const incidentsCount = verifiedIncidentsCount[company.id] || 0;
+          const isDisabled = incidentsCount === 0;
+          
+          return (
+            <ListItem 
+              key={company.id} 
+              disablePadding
+              divider={index < companies.length - 1}
+            >
+              <ListItemButton
+                onClick={() => !isDisabled && handleCompanyClick(company.id)}
+                selected={isSelected}
+                disabled={isDisabled}
+                sx={{
+                  backgroundColor: isSelected ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: isDisabled ? 'transparent' : 'action.hover',
+                  },
+                  '&.Mui-selected': {
+                    backgroundColor: 'action.selected',
+                  },
+                  '&.Mui-disabled': {
+                    opacity: 0.5,
+                  },
+                }}
+              >
+                <ListItemAvatar>
+                  {company.image ? (
+                    <Box component="img" src={company.image} sx={{ borderRadius: 1, height: '48px', width: '48px' }} />
+                  ) : (
+                    <Box
+                      sx={{
+                        borderRadius: 1,
+                        backgroundColor: 'var(--mui-palette-neutral-200)',
+                        height: '48px',
+                        width: '48px',
+                      }}
+                    />
+                  )}
+                </ListItemAvatar>
+                <ListItemText
+                  primary={company.name}
+                  primaryTypographyProps={{ variant: 'subtitle1' }}
+                  secondary={
+                    <>
+                      {verifiedIncidentsCount[company.id] || 0} incidents
+                    </>
+                  }
+                  secondaryTypographyProps={{ variant: 'body2' }}
                 />
-              )}
-            </ListItemAvatar>
-            <ListItemText
-              primary={product.name}
-              primaryTypographyProps={{ variant: 'subtitle1' }}
-              secondary={`Updated ${dayjs(product.updatedAt).format('MMM D, YYYY')}`}
-              secondaryTypographyProps={{ variant: 'body2' }}
-            />
-            {index === 0 && (
-              <CaretRight weight="bold" />
-            )}
-          </ListItem>
-        ))}
+                {isSelected && (
+                  <CaretRight weight="bold" />
+                )}
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
-      <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button
-          color="inherit"
-          endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />}
-          size="small"
-          variant="text"
-        >
-          View all
-        </Button>
-      </CardActions>
     </Card>
   );
 }

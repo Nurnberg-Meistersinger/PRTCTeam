@@ -12,7 +12,7 @@ import { MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGl
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 
 import { MobileNav } from './mobile-nav';
-import { ConnectButton } from '@/components/app-kit/ConnectButton';
+import { AzguardConnectButton } from '@/components/app-kit/AzguardConnectButton';
 
 export function MainNav(): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
@@ -62,7 +62,7 @@ export function MainNav(): React.JSX.Element {
                 </IconButton>
               </Badge>
             </Tooltip>
-            <ConnectButton />
+            <AzguardConnectButton />
           </Stack>
         </Stack>
       </Box>

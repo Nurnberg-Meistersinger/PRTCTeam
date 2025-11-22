@@ -29,17 +29,17 @@ export const kepple = {
 } satisfies PartialColor;
 
 export const neonBlue = {
-  50: '#ecf0ff',
-  100: '#dde3ff',
-  200: '#c2cbff',
-  300: '#9ca7ff',
-  400: '#7578ff',
-  500: '#635bff',
-  600: '#4e36f5',
-  700: '#432ad8',
-  800: '#3725ae',
-  900: '#302689',
-  950: '#1e1650',
+  50: '#f8f9fa',
+  100: '#f1f3f5',
+  200: '#e9ecef',
+  300: '#dee2e6',
+  400: '#adb5bd',
+  500: '#6c757d',
+  600: '#495057',
+  700: '#343a40',
+  800: '#212529',
+  900: '#1a1d21',
+  950: '#0d0f12',
 } satisfies PartialColor;
 
 export const nevada = {
