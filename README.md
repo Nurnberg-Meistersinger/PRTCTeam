@@ -16,7 +16,7 @@ We are building a cyber insurance infrastructure platform that allows policyhold
 
 ## Solution
 
-The PRTCT platform acts as an intermediary between the Insurer and the Policyholder. For Policyholder to generate a ZKP of Incident, a reliable source of trustworthy and authentic Cyber-Incident data that is extremely difficult to tamper with is required. Such a source can be SOAR-class cybersecurity systems, which emit Cyber-Incident artifacts that cannot be tampered with or altered without being detected. SOAR-class systems are the best choice due to their orchestration function: they collect raw security data and alerts from all other company cybersecurity modules, such as SIEM, EDR, DLP, WAF, NGFW, etc.
+The PRTCT platform acts as an intermediary between the Insurer and the Policyholder. For Policyholder to generate a ZKP of Incident, a reliable source of trustworthy and authentic Cyber-Incident data that is extremely difficult to tamper with is required. Such a source can be [SOAR-class](https://www.microsoft.com/en-us/security/business/security-101/what-is-soar) cybersecurity systems, which emit Cyber-Incident artifacts that cannot be tampered with or altered without being detected. SOAR-class systems are the best choice due to their orchestration function: they collect raw security data and alerts from all other company cybersecurity modules, such as SIEM, EDR, DLP, WAF, NGFW, etc.
 
 To ensure a stable and secure data transfer channel from Policyholder to PRTCT, we assume to integrate the lightweight Watch Guardian module into Policyholder's IT infrastructure during the cyber risk underwriting phase, ensuring the delivery of Cyber-Incident artifacts over secure communication channels in real time. We have several working hypotheses regarding practical implementation (TLS in backend is major), but we plan to experiment with zkTLS separately.
 
@@ -36,11 +36,11 @@ After receiving and processing all Cyber-Incident data, the PRTCT platform allow
 
 ## Proving Logic
 
-As part of the hackathon, we were able to build a simplified prototype system and write the logic for proving the onset of a rather critical Golden Ticket Attack — a cyberattack targeting Active Directory infrastructure that allows attackers to gain persistent domain-level access by forging Kerberos authentication tickets.
+As part of the hackathon, we were able to build a simplified prototype system and write the logic for proving the onset of a rather critical [Golden Ticket Attack](https://www.sentinelone.com/blog/mitigation-strategy-kerberos-golden-ticket-attack/): a cyberattack targeting Active Directory infrastructure that allows attackers to gain persistent domain-level access by forging Kerberos authentication tickets.
 
 ### How It Works
 
-1. Compromise: Attacker obtains the KRBTGT account password hash (domain controller's master key)
+1. Compromise: Attacker obtains the [KRBTGT account](https://adsecurity.org/?p=483) password hash (domain controller's master key)
 2. Forgery: Creates fake Ticket-Granting Tickets (TGT) with arbitrary parameters
 3. Persistence: Gains unlimited access to any domain resource while remaining undetectable
 
@@ -51,7 +51,7 @@ The circuit processes Windows Security Event logs, specifically focusing on Kerb
 | Field Name | Type | Description | Example Value | Attack Indicator |
 |------------|------|-------------|---------------|------------------|
 | **Event ID** | u32 | Windows Event ID for Kerberos TGT requests | 4769 | Always 4769 for Kerberos ticket requests |
-| **User RID** | u32 | Relative Identifier - unique user ID within domain | 500, 1001 | Well-known RIDs (500=Administrator) or non-existent users |
+| **User RID** | u32 | Relative Identifier: unique user ID within domain | 500, 1001 | Well-known RIDs (500=Administrator) or non-existent users |
 | **Group Membership** | u32 | Group RID indicating security group membership | 512 | Domain Admins (512) assigned to non-existent users |
 | **Ticket Lifetime** | u32 | Requested ticket lifetime in hours | 87600 | Excessive duration (10+ years vs normal 10 hours) |
 | **Timestamp** | u32 | Event occurrence time (Unix timestamp) | 1672531200 | For temporal correlation and sequence analysis |
