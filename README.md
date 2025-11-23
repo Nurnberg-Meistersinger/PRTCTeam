@@ -94,7 +94,7 @@ _timestamps: [u32; LOGS_COUNT]            // Event timestamps (for future correl
 
 ## Architecture
 
-The current version of the architecture implements only the basic logic of Policyholder and Insurer authorization via Azguard Wallet (Aztec), acceptance and processing of incidents in the form of mock data, generation of ZK Proof of Incident (Golden Ticket Attack) via Noir circuit, as well as ZK Proof broadcast and display on the Frontend UI.
+The current version of the architecture implements only the basic logic of Policyholder and Insurer authorization via Azguard Wallet (Aztec), acceptance and processing of incidents in the form of mock data, generation of ZK Proof of Incident (Golden Ticket Attack) via Noir circuit, as well as ZK Proof broadcast and display on the Frontend.
 
 ![MVP Architecture](/assets/Arch_MVP.png)
 
