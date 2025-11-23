@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-// @ts-expect-error - module exports correctly, but TypeScript cannot resolve it
 import { AztecWallet } from '@azguardwallet/aztec-wallet';
 // Use types from the exported module
 type Wallet = Awaited<ReturnType<typeof AztecWallet.connect>>;

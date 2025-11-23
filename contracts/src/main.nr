@@ -3,7 +3,7 @@ use dep::aztec::macros::aztec;
 #[aztec]
 pub contract PRTC_verifier {
     use aztec::{
-        macros::{functions::{private, utility}, storage::storage},
+        macros::{functions::{initializer, private, utility}, storage::storage},
         protocol_types::{address::AztecAddress},
         state_vars::Map,
     };
@@ -14,6 +14,12 @@ pub contract PRTC_verifier {
     #[storage]
     struct Storage<Context> {
         verification_status: Map<AztecAddress, EasyPrivateUint<Context>, Context>,
+    }
+
+    #[initializer]
+    #[private]
+    fn constructor() {
+        // Empty constructor
     }
 
     #[private]

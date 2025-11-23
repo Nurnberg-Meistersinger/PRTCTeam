@@ -1,36 +1,25 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 
 import { config } from '@/config';
-import { IncidentDetails } from '@/components/dashboard/incident/incident-details';
-import { getIncidentById, getCompanyNameByCompanyId } from '@/data/dummy-data';
+import { IncidentDetailsWrapper } from '@/components/dashboard/incident/incident-details-wrapper';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ companyId?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const incident = getIncidentById(id);
   
-  if (!incident) {
-    return { title: `Incident not found | ${config.site.name}` };
-  }
-
-  return { title: `Incident ${incident.incident_id} | ${config.site.name}` };
+  return { title: `Incident ${id} | ${config.site.name}` };
 }
 
-export default async function Page({ params }: PageProps): Promise<React.JSX.Element> {
+export default async function Page({ params, searchParams }: PageProps): Promise<React.JSX.Element> {
   const { id } = await params;
-  const incident = getIncidentById(id);
+  const { companyId } = await searchParams;
 
-  if (!incident) {
-    notFound();
-  }
-
-  const companyName = getCompanyNameByCompanyId(incident.companyId);
-
-  return <IncidentDetails incident={incident} companyName={companyName} />;
+  // Pass companyId from query params for Insurer role
+  return <IncidentDetailsWrapper incidentId={id} companyId={companyId} />;
 }
 

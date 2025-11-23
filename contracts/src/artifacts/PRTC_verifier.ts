@@ -125,6 +125,9 @@ export class PRTC_verifierContract extends ContractBase {
   /** Type-safe wrappers for the public methods exposed by the contract. */
   public declare methods: {
     
+    /** constructor() */
+    constructor: (() => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
+
     /** get_verification_status(incident_id: struct) */
     get_verification_status: ((incident_id: AztecAddressLike) => ContractFunctionInteraction) & Pick<ContractMethod, 'selector'>;
 

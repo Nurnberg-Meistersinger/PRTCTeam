@@ -7,6 +7,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
@@ -16,6 +17,7 @@ import { Check } from '@phosphor-icons/react/dist/ssr/Check';
 import { Copy } from '@phosphor-icons/react/dist/ssr/Copy';
 import dayjs from 'dayjs';
 import { useRole } from '@/contexts/role-context';
+import { useVerifyProof, useGenerateProof } from '@/lib/api';
 
 export interface IncidentDetailsData {
   id: string;
@@ -38,6 +40,7 @@ export interface IncidentDetailsData {
 interface IncidentDetailsProps {
   incident: IncidentDetailsData;
   companyName?: string;
+  onIncidentUpdate?: () => void;
 }
 
 const statusMap = {
@@ -51,12 +54,45 @@ function getEtherscanUrl(txHash: string): string {
   return `https://devnet.aztecscan.xyz/tx-effects/${txHash}`;
 }
 
-export function IncidentDetails({ incident, companyName }: IncidentDetailsProps): React.JSX.Element {
+export function IncidentDetails({ incident, companyName, onIncidentUpdate }: IncidentDetailsProps): React.JSX.Element {
   const { role } = useRole();
   const [copiedCommitment, setCopiedCommitment] = React.useState(false);
   const [copiedTxHash, setCopiedTxHash] = React.useState(false);
   const [copiedProofHash, setCopiedProofHash] = React.useState(false);
   const [copiedPublicInput, setCopiedPublicInput] = React.useState<Record<number, boolean>>({});
+  const [currentIncident, setCurrentIncident] = React.useState<IncidentDetailsData>(incident);
+
+  // Use verify proof mutation from API
+  const verifyProofMutation = useVerifyProof({
+    onSuccess: async () => {
+      // Add artificial delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Trigger refetch in parent component
+      if (onIncidentUpdate) {
+        onIncidentUpdate();
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to verify proof:', error);
+      // Could show error toast here if needed
+    },
+  });
+
+  // Use generate proof mutation from API
+  const generateProofMutation = useGenerateProof({
+    onSuccess: async () => {
+      // Add artificial delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Trigger refetch in parent component
+      if (onIncidentUpdate) {
+        onIncidentUpdate();
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to generate proof:', error);
+      // Could show error toast here if needed
+    },
+  });
 
   const handleCopy = async (text: string, type: 'commitment' | 'txHash' | 'proofHash' | 'publicInput', index?: number) => {
     try {
@@ -96,15 +132,55 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
     'Failed': { label: 'Failed', color: 'error' },
   } as const;
 
-  const commitmentPreview = `${incident.commitment.slice(0, 10)}...`;
-  const { label, color } = statusMap[incident.status] ?? { label: 'Unknown', color: 'default' };
-  const hasProof = !!incident.proof;
-  const needsProof = incident.status === 'Need Proof';
+  // Handle proof generation
+  const handleGenerateProof = React.useCallback(async () => {
+    try {
+      await generateProofMutation.mutateAsync(currentIncident.incident_id);
+      // Data will be automatically refetched by React Query after invalidation
+      // The incident prop will be updated with new data from API
+    } catch (error) {
+      // Error is already handled in mutation's onError callback
+      console.error('Proof generation failed:', error);
+    }
+  }, [currentIncident.incident_id, generateProofMutation]);
+
+  // Handle incident verification (only for Insurer)
+  const handleVerifyIncident = React.useCallback(async () => {
+    if (!currentIncident.companyId) {
+      console.error('Company ID is required for verification');
+      return;
+    }
+
+    try {
+      await verifyProofMutation.mutateAsync({
+        companyId: currentIncident.companyId,
+        incidentId: currentIncident.incident_id,
+      });
+      // Data will be automatically refetched by React Query
+    } catch (error) {
+      // Error is already handled in mutation's onError callback
+      console.error('Verification failed:', error);
+    }
+  }, [currentIncident.companyId, currentIncident.incident_id, verifyProofMutation]);
+
+  const commitmentPreview = `${currentIncident.commitment.slice(0, 10)}...`;
+  const { label, color } = statusMap[currentIncident.status] ?? { label: 'Unknown', color: 'default' };
+  const hasProof = !!currentIncident.proof;
+  const needsProof = currentIncident.status === 'Need Proof';
+  const proofNotVerified = currentIncident.status === 'Proof Not Verified';
+  const showVerifyButton = role === 'Insurer' && proofNotVerified && hasProof;
+  const isVerifyingIncident = verifyProofMutation.isPending;
+  const isGeneratingProof = generateProofMutation.isPending;
+
+  // Update local incident state when prop changes
+  React.useEffect(() => {
+    setCurrentIncident(incident);
+  }, [incident]);
 
   // For Policyholder, don't show company name in title
   const title = role === 'Policyholder' || !companyName
-    ? `Incident #${incident.incident_id}`
-    : `Incident #${incident.incident_id} - ${companyName}`;
+    ? `Incident #${currentIncident.incident_id}`
+    : `Incident #${currentIncident.incident_id} - ${companyName}`;
 
   return (
     <Card>
@@ -122,7 +198,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Incident ID
               </Typography>
-              <Typography variant="body1">{incident.incident_id}</Typography>
+              <Typography variant="body1">{currentIncident.incident_id}</Typography>
             </Box>
 
             <Divider />
@@ -138,7 +214,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                 </Typography>
                 <IconButton
                   size="small"
-                  onClick={() => handleCopy(incident.commitment, 'commitment')}
+                  onClick={() => handleCopy(currentIncident.commitment, 'commitment')}
                   sx={{ ml: 1 }}
                 >
                   {copiedCommitment ? (
@@ -153,7 +229,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
             <Divider />
 
             {/* Transaction Hash */}
-            {incident.txHash && (
+            {currentIncident.txHash && (
               <>
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -161,11 +237,11 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="body1" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
-                      {incident.txHash}
+                      {currentIncident.txHash}
                     </Typography>
                     <IconButton
                       size="small"
-                      onClick={() => handleCopy(incident.txHash!, 'txHash')}
+                      onClick={() => handleCopy(currentIncident.txHash!, 'txHash')}
                       sx={{ ml: 1 }}
                     >
                       {copiedTxHash ? (
@@ -198,13 +274,12 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                       variant="contained"
                       color="primary"
                       fullWidth
-                      onClick={() => {
-                        // Handle generate proof action
-                        console.log('Generate proof for incident:', incident.incident_id);
-                      }}
+                      onClick={handleGenerateProof}
+                      disabled={isGeneratingProof}
                       sx={{ mt: 2 }}
+                      startIcon={isGeneratingProof ? <CircularProgress size={16} color="inherit" /> : undefined}
                     >
-                      Generate proof
+                      {isGeneratingProof ? 'Generating...' : 'Generate proof'}
                     </Button>
                   </Box>
                 ) : (hasProof ? (
@@ -220,11 +295,11 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem', wordBreak: 'break-all' }}>
-                            {incident.proof!.hash}
+                            {currentIncident.proof!.hash}
                           </Typography>
                           <IconButton
                             size="small"
-                            onClick={() => handleCopy(incident.proof!.hash, 'proofHash')}
+                            onClick={() => handleCopy(currentIncident.proof!.hash, 'proofHash')}
                           >
                             {copiedProofHash ? (
                               <Check fontSize="var(--icon-fontSize-md)" />
@@ -238,14 +313,14 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                       <Divider />
 
                       {/* Public Inputs */}
-                      {incident.proof!.publicInputs && incident.proof!.publicInputs.length > 0 && (
+                      {currentIncident.proof!.publicInputs && currentIncident.proof!.publicInputs.length > 0 && (
                         <>
                           <Box>
                             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                               Public Inputs
                             </Typography>
                             <Stack spacing={1}>
-                              {incident.proof!.publicInputs.map((input, index) => (
+                              {currentIncident.proof!.publicInputs.map((input, index) => (
                                 <Stack key={index} direction="row" spacing={1} alignItems="center">
                                   <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem', flex: 1, wordBreak: 'break-all' }}>
                                     {input}
@@ -275,11 +350,11 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem', wordBreak: 'break-all' }}>
-                            {incident.commitment}
+                            {currentIncident.commitment}
                           </Typography>
                           <IconButton
                             size="small"
-                            onClick={() => handleCopy(incident.commitment, 'commitment')}
+                            onClick={() => handleCopy(currentIncident.commitment, 'commitment')}
                           >
                             {copiedCommitment ? (
                               <Check fontSize="var(--icon-fontSize-md)" />
@@ -293,7 +368,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                       <Divider />
 
                       {/* Transaction Hash (Blockchain) */}
-                      {incident.proof!.txHash && (
+                      {currentIncident.proof!.txHash && (
                         <>
                           <Box>
                             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -301,16 +376,16 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                             </Typography>
                             <Stack direction="row" spacing={1} alignItems="center">
                               <Link 
-                                href={getEtherscanUrl(incident.proof!.txHash)} 
+                                href={getEtherscanUrl(currentIncident.proof!.txHash)} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 sx={{ fontFamily: 'monospace', fontSize: '0.875rem', wordBreak: 'break-all' }}
                               >
-                                {incident.proof!.txHash}
+                                {currentIncident.proof!.txHash}
                               </Link>
                               <IconButton
                                 size="small"
-                                onClick={() => handleCopy(incident.proof!.txHash!, 'txHash')}
+                                onClick={() => handleCopy(currentIncident.proof!.txHash!, 'txHash')}
                               >
                                 {copiedTxHash ? (
                                   <Check fontSize="var(--icon-fontSize-md)" />
@@ -325,19 +400,34 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                       )}
 
                       {/* Blockchain Status */}
-                      {incident.proof!.blockchainStatus && (
+                      {currentIncident.proof!.blockchainStatus && (
                         <Box>
                           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                             Blockchain Status
                           </Typography>
                           <Chip 
-                            color={blockchainStatusMap[incident.proof!.blockchainStatus].color as 'warning' | 'success' | 'error'} 
-                            label={blockchainStatusMap[incident.proof!.blockchainStatus].label} 
+                            color={blockchainStatusMap[currentIncident.proof!.blockchainStatus].color as 'warning' | 'success' | 'error'} 
+                            label={blockchainStatusMap[currentIncident.proof!.blockchainStatus].label} 
                             size="small" 
                           />
                         </Box>
                       )}
                     </Stack>
+                    {/* Verify Incident button - only for Insurer when status is Proof Not Verified */}
+                    {showVerifyButton && (
+                      <Box sx={{ mt: 3 }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          onClick={handleVerifyIncident}
+                          disabled={isVerifyingIncident}
+                          startIcon={isVerifyingIncident ? <CircularProgress size={16} color="inherit" /> : undefined}
+                        >
+                          {isVerifyingIncident ? 'Verifying...' : 'Verify Incident'}
+                        </Button>
+                      </Box>
+                    )}
                   </Box>
                 ) : null)}
               </CardContent>
@@ -351,7 +441,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                 Created At
               </Typography>
               <Typography variant="body2">
-                {dayjs(incident.createdAt).format('MMM D, YYYY [at] h:mm A')}
+                {dayjs(currentIncident.createdAt).format('MMM D, YYYY [at] h:mm A')}
               </Typography>
             </Box>
           </Stack>

@@ -1,6 +1,10 @@
 {
   "PRTC_project-PRTC_verifier.json": {
     "contractName": "PRTC_verifier",
-    "hash": "0e6745b29cbf0d4af9129a8b8c5f5df15c146f3fcd1ad8782e4804cd03c33674"
+    "hash": "db711c0c05d565095f88715ec525eb3891d9e7f5783a44034bf5fc026bca6403"
+  },
+  "PRTC_project-Counter.json": {
+    "contractName": "Counter",
+    "hash": "d5420968290cf603a4cac1b7597532133a60c2c3b7c0a01203243520ad3bd73a"
   }
 }

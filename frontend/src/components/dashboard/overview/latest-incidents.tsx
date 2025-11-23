@@ -35,6 +35,7 @@ export interface Incident {
 export interface LatestIncidentsProps {
   incidents?: Incident[];
   companyName?: string;
+  companyId?: string;
   title?: string;
   sx?: SxProps;
 }
@@ -49,7 +50,7 @@ function statusValue(status: 'Need Proof' | 'Proof Not Verified' | 'ZK proof Ver
   return 3; // 'ZK proof Verified'
 }
 
-export function LatestIncidents({ incidents = [], companyName, title: customTitle, sx }: LatestIncidentsProps): React.JSX.Element {
+export function LatestIncidents({ incidents = [], companyName, companyId, title: customTitle, sx }: LatestIncidentsProps): React.JSX.Element {
   const router = useRouter();
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc");
   
@@ -58,7 +59,11 @@ export function LatestIncidents({ incidents = [], companyName, title: customTitl
     : 'Latest incidents');
 
   const handleReviewIncident = (incidentId: string) => {
-    router.push(paths.incident(incidentId));
+    // Include companyId in URL query params if available (for Insurer role)
+    const url = companyId 
+      ? `${paths.incident(incidentId)}?companyId=${companyId}`
+      : paths.incident(incidentId);
+    router.push(url);
   };
 
   const handleSort = () => {

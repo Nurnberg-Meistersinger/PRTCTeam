@@ -9,8 +9,8 @@ export const aztecConfig = {
   metadata: {
     name: 'Hackaton Dashboard',
     description: 'Dashboard app for ETHGlobal Buenos Aires 2025',
-    url: globalThis.window !== undefined ? globalThis.window.location.origin : 'https://app.example.com',
-    logo: globalThis.window !== undefined ? `${globalThis.window.location.origin}/favicon.ico` : '/favicon.ico',
+    url: globalThis.window === undefined ? 'https://app.example.com' : globalThis.window.location.origin,
+    logo: globalThis.window === undefined ? '/favicon.ico' : `${globalThis.window.location.origin}/favicon.ico`,
   } as DappMetadata,
 };
 

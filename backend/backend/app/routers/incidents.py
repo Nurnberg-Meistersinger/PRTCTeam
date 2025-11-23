@@ -4,14 +4,12 @@ from sqlalchemy.orm import Session
 from app.db import SessionLocal
 from app.models import Incident, Company
 
-
 router = APIRouter(prefix="", tags=["Policyholder"])
 
 
-# ------------------------------------------------------
-# Dependency
-# ------------------------------------------------------
-
+# --------------------------------------------------------------------
+# Dependency: DB session
+# --------------------------------------------------------------------
 def get_db():
     db = SessionLocal()
     try:
@@ -20,31 +18,39 @@ def get_db():
         db.close()
 
 
-# ------------------------------------------------------
+# --------------------------------------------------------------------
 # 1. LIST INCIDENTS (GET /incidents)
-# ------------------------------------------------------
-
-@router.get("/incidents")
+# --------------------------------------------------------------------
+@router.get("/incidents", summary="List all incidents")
 def list_incidents(db: Session = Depends(get_db)):
     incidents = db.query(Incident).all()
 
     return [
         {
             "incident_id": i.incident_id,
+            "company_id": i.company_id,
             "detected_at": i.detected_at,
             "proof_status": i.proof_status,
+
+            # NEW
+            "severity": i.severity,
+            "event_count": i.event_count,
+            "agent_version": i.agent_version,
         }
         for i in incidents
     ]
 
 
-# ------------------------------------------------------
-# 2. INCIDENT DETAILS (GET /incident/{id})
-# ------------------------------------------------------
-
-@router.get("/incident/{incidentId}")
+# --------------------------------------------------------------------
+# 2. INCIDENT DETAILS (GET /incident/{incidentId})
+# --------------------------------------------------------------------
+@router.get("/incident/{incidentId}", summary="Get incident details")
 def incident_details(incidentId: str, db: Session = Depends(get_db)):
-    inc = db.query(Incident).filter(Incident.incident_id == incidentId).first()
+    inc = (
+        db.query(Incident)
+        .filter(Incident.incident_id == incidentId)
+        .first()
+    )
 
     if not inc:
         raise HTTPException(status_code=404, detail="Incident not found")
@@ -69,17 +75,29 @@ def incident_details(incidentId: str, db: Session = Depends(get_db)):
         "proof_status": inc.proof_status,
         "transaction_hash": inc.transaction_hash,
         "blockchain_status": inc.blockchain_status,
+
+        # NEW FIELDS
+        "severity": inc.severity,
+        "event_count": inc.event_count,
+        "agent_version": inc.agent_version,
+
         "proof_summary": proof_summary,
     }
 
 
-# ------------------------------------------------------
-# 3. GENERATE PROOF (POST /incident/{id}/generate-proof)
-# ------------------------------------------------------
-
-@router.post("/incident/{incidentId}/generate-proof")
+# --------------------------------------------------------------------
+# 3. GENERATE PROOF (POST /incident/{incidentId}/generate-proof)
+# --------------------------------------------------------------------
+@router.post(
+    "/incident/{incidentId}/generate-proof",
+    summary="Simulate ZK proof generation",
+)
 def generate_proof(incidentId: str, db: Session = Depends(get_db)):
-    inc = db.query(Incident).filter(Incident.incident_id == incidentId).first()
+    inc = (
+        db.query(Incident)
+        .filter(Incident.incident_id == incidentId)
+        .first()
+    )
 
     if not inc:
         raise HTTPException(status_code=404, detail="Incident not found")
