@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/filename-case */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -5,6 +6,11 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useAztec } from '@/contexts/aztec-provider';
+
+function formatAddress(address: string): string {
+  if (!address) return '';
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
 
 export function AzguardConnectButton(): React.JSX.Element {
   const { account, isConnected, isConnecting, connect, disconnect } = useAztec();
@@ -14,8 +20,13 @@ export function AzguardConnectButton(): React.JSX.Element {
   useEffect(() => {
     // Check for window.azguard (Azguard Wallet extension)
     const checkWallet = () => {
-      const hasWallet = typeof window !== 'undefined' && 
-        (typeof (window as any).azguard !== 'undefined' || typeof (window as any).aztec !== 'undefined');
+      if (globalThis.window === undefined) {
+        setIsWalletInstalled(false);
+        return;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const windowAny = globalThis.window as any;
+      const hasWallet = windowAny.azguard !== undefined || windowAny.aztec !== undefined;
       setIsWalletInstalled(hasWallet);
     };
 
@@ -29,9 +40,10 @@ export function AzguardConnectButton(): React.JSX.Element {
     setError(null);
     try {
       await connect();
-    } catch (err: any) {
-      setError(err.message || 'Error connecting to Azguard Wallet');
-      console.error('Connection error:', err);
+    } catch (error_) {
+      const errorMessage = error_ instanceof Error ? error_.message : 'Error connecting to Azguard Wallet';
+      setError(errorMessage);
+      console.error('Connection error:', error_);
     }
   };
 
@@ -39,15 +51,11 @@ export function AzguardConnectButton(): React.JSX.Element {
     setError(null);
     try {
       await disconnect();
-    } catch (err: any) {
-      setError(err.message || 'Error disconnecting');
-      console.error('Disconnect error:', err);
+    } catch (error_) {
+      const errorMessage = error_ instanceof Error ? error_.message : 'Error disconnecting';
+      setError(errorMessage);
+      console.error('Disconnect error:', error_);
     }
-  };
-
-  const formatAddress = (address: string): string => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   if (!isWalletInstalled) {

@@ -1,9 +1,12 @@
-'use client'
+/* eslint-disable unicorn/filename-case */
+'use client';
 
-export const ConnectButton = () => {
+import * as React from 'react';
+
+export const ConnectButton = (): React.JSX.Element => {
   return (
     <div>
-        <appkit-button />
+      <appkit-button />
     </div>
-  )
-}
+  );
+};

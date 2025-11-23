@@ -1,4 +1,5 @@
 // Type definitions for Azguard Wallet browser extension
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface Window {
   azguard?: AzguardProvider;

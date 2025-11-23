@@ -1,11 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-// @ts-ignore - module exports correctly, but TypeScript cannot resolve it
+// @ts-expect-error - module exports correctly, but TypeScript cannot resolve it
 import { AztecWallet } from '@azguardwallet/aztec-wallet';
 // Use types from the exported module
 type Wallet = Awaited<ReturnType<typeof AztecWallet.connect>>;
 type Aliased<T> = { item: T; alias?: string };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AztecAddress = any; // Aztec address type
 import { aztecConfig } from '@/config/aztec-config';
 
@@ -131,7 +132,8 @@ export function AztecProvider({ children }: AztecProviderProps): React.JSX.Eleme
         setAccounts(null);
       });
       
-    } catch (error: any) {
+    } catch (error_) {
+      const error = error_ instanceof Error ? error_ : new Error(String(error_));
       console.error('Error connecting to Azguard Wallet:', error);
       if (error.message?.includes('user rejected') || error.message?.includes('User rejected')) {
         throw new Error('User rejected the connection request.');

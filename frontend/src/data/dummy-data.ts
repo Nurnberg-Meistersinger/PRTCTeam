@@ -56,20 +56,32 @@ function generateIncidentId(date: Date, index: number): string {
 function generateHash(prefix: string, seed: string = ''): string {
   const chars = '0123456789abcdef';
   let hash = prefix;
-  // Generate deterministic hash based on seed
-  let value = 0;
+  
+  // Create a more robust hash from the seed using multiple hash functions
+  let hash1 = 5381; // djb2 initial value
+  let hash2 = 0;
+  
   for (let i = 0; i < seed.length; i++) {
-    value = ((value << 5) - value) + seed.charCodeAt(i);
-    value = value & value; // Convert to 32-bit number
+    const char = seed.codePointAt(i) ?? 0;
+    // First hash function (djb2)
+    hash1 = ((hash1 << 5) + hash1) + char;
+    hash1 = hash1 >>> 0; // Convert to unsigned 32-bit integer
+    // Second hash function (sdbm)
+    hash2 = char + (hash2 << 6) + (hash2 << 16) - hash2;
+    hash2 = hash2 >>> 0; // Convert to unsigned 32-bit integer
   }
-  // If seed is empty, use random value for variety
-  if (!seed) {
-    value = Math.floor(Math.random() * 0x7fffffff);
-  }
+  
+  // Combine both hashes and add seed length for better distribution
+  const combinedValue = (hash1 ^ hash2 ^ (seed.length * 31)) >>> 0;
+  
+  // Generate hash characters using LCG with better parameters
+  let value = combinedValue;
   for (let i = prefix.length; i < 64; i++) {
-    value = ((value * 1103515245) + 12345) & 0x7fffffff;
+    // Use different multiplier and increment for better distribution
+    value = ((value * 1_664_525) + 1_013_904_223) >>> 0;
     hash += chars[value % chars.length];
   }
+  
   return hash;
 }
 
@@ -103,7 +115,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(5, 'hours').subtract(1, 'day').toDate(), 2),
     companyId: 'COMP-001',
     commitment: getIncidentHash('2', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(5, 'hours').subtract(1, 'day').toDate(),
   },
   '3': {
@@ -128,7 +140,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(1, 'week').toDate(), 4),
     companyId: 'COMP-001',
     commitment: getIncidentHash('4', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(1, 'week').toDate(),
   },
   '5': {
@@ -153,7 +165,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(2, 'weeks').toDate(), 6),
     companyId: 'COMP-001',
     commitment: getIncidentHash('6', 'commitment'),
-    status: 'ZK proof Verified',
+    status: 'Proof Not Verified',
     proof: {
       hash: getIncidentHash('6', 'proofHash'),
       size: 3072,
@@ -168,7 +180,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(45, 'minutes').toDate(), 7),
     companyId: 'COMP-001',
     commitment: getIncidentHash('7', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(45, 'minutes').toDate(),
   },
   '8': {
@@ -195,7 +207,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(30, 'minutes').toDate(), 1),
     companyId: 'COMP-002',
     commitment: getIncidentHash('9', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(30, 'minutes').toDate(),
   },
   '10': {
@@ -220,7 +232,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(4, 'days').toDate(), 3),
     companyId: 'COMP-002',
     commitment: getIncidentHash('11', 'commitment'),
-    status: 'ZK proof Verified',
+    status: 'Proof Not Verified',
     proof: {
       hash: getIncidentHash('11', 'proofHash'),
       size: 2560,
@@ -239,7 +251,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(18, 'minutes').toDate(), 1),
     companyId: 'COMP-004',
     commitment: getIncidentHash('12', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(18, 'minutes').toDate(),
   },
   '13': {
@@ -263,7 +275,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(6, 'days').toDate(), 3),
     companyId: 'COMP-004',
     commitment: getIncidentHash('14', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(6, 'days').toDate(),
   },
   '15': {
@@ -271,7 +283,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(3, 'weeks').toDate(), 4),
     companyId: 'COMP-004',
     commitment: getIncidentHash('15', 'commitment'),
-    status: 'ZK proof Verified',
+    status: 'Proof Not Verified',
     proof: {
       hash: getIncidentHash('15', 'proofHash'),
       size: 3584,
@@ -304,7 +316,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(5, 'minutes').toDate(), 1),
     companyId: 'COMP-005',
     commitment: getIncidentHash('17', 'commitment'),
-    status: 'ZK proof Verified',
+    status: 'Proof Not Verified',
     proof: {
       hash: getIncidentHash('17', 'proofHash'),
       size: 2048,
@@ -319,7 +331,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(22, 'minutes').toDate(), 2),
     companyId: 'COMP-005',
     commitment: getIncidentHash('18', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(22, 'minutes').toDate(),
   },
   '19': {
@@ -344,7 +356,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(1, 'week').subtract(3, 'days').toDate(), 4),
     companyId: 'COMP-005',
     commitment: getIncidentHash('20', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(1, 'week').subtract(3, 'days').toDate(),
   },
   '21': {
@@ -352,7 +364,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(8, 'days').toDate(), 5),
     companyId: 'COMP-005',
     commitment: getIncidentHash('21', 'commitment'),
-    status: 'ZK proof Verified',
+    status: 'Proof Not Verified',
     proof: {
       hash: getIncidentHash('21', 'proofHash'),
       size: 3072,
@@ -367,7 +379,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(12, 'hours').toDate(), 6),
     companyId: 'COMP-005',
     commitment: getIncidentHash('22', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(12, 'hours').toDate(),
   },
   '23': {
@@ -407,7 +419,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(10, 'days').toDate(), 9),
     companyId: 'COMP-005',
     commitment: getIncidentHash('25', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(10, 'days').toDate(),
   },
   '26': {
@@ -432,7 +444,7 @@ const incidentsFullData: Record<string, IncidentDetailsData> = {
     incident_id: generateIncidentId(dayjs().subtract(7, 'days').toDate(), 1),
     companyId: 'COMP-006',
     commitment: getIncidentHash('27', 'commitment'),
-    status: 'Not Verified',
+    status: 'Need Proof',
     createdAt: dayjs().subtract(7, 'days').toDate(),
   },
   '28': {

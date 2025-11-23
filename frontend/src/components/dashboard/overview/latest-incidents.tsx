@@ -4,7 +4,6 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardHeader from '@mui/material/CardHeader';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
@@ -15,39 +14,48 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import { ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 
 import { paths } from '@/paths';
 
 const statusMap = {
+  'Need Proof': { label: 'Need Proof', color: 'error' },
+  'Proof Not Verified': { label: 'Proof Not Verified', color: 'warning' },
   'ZK proof Verified': { label: 'ZK proof Verified', color: 'success' },
-  'Not Verified': { label: 'Not Verified', color: 'error' },
 } as const;
 
 export interface Incident {
   id: string;
   incident_id: string;
-  status: 'ZK proof Verified' | 'Not Verified';
+  status: 'Need Proof' | 'Proof Not Verified' | 'ZK proof Verified';
   createdAt: Date;
 }
 
 export interface LatestIncidentsProps {
   incidents?: Incident[];
   companyName?: string;
+  title?: string;
   sx?: SxProps;
 }
 
 type SortDirection = 'asc' | 'desc';
 
-export function LatestIncidents({ incidents = [], companyName, sx }: LatestIncidentsProps): React.JSX.Element {
+// Assign numeric values to statuses for sorting
+// 'Need Proof' = 1, 'Proof Not Verified' = 2, 'ZK proof Verified' = 3
+function statusValue(status: 'Need Proof' | 'Proof Not Verified' | 'ZK proof Verified'): number {
+  if (status === 'Need Proof') return 1;
+  if (status === 'Proof Not Verified') return 2;
+  return 3; // 'ZK proof Verified'
+}
+
+export function LatestIncidents({ incidents = [], companyName, title: customTitle, sx }: LatestIncidentsProps): React.JSX.Element {
   const router = useRouter();
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc");
   
-  const title = companyName 
+  const title = customTitle || (companyName 
     ? `Incidents - ${companyName}` 
-    : 'Latest incidents';
+    : 'Latest incidents');
 
   const handleReviewIncident = (incidentId: string) => {
     router.push(paths.incident(incidentId));
@@ -62,24 +70,15 @@ export function LatestIncidents({ incidents = [], companyName, sx }: LatestIncid
   };
 
   // Sort incidents by status
-  // Default: unverified on top (desc)
+  // Default: Need Proof on top (desc), then Proof Not Verified, then ZK proof Verified
   const sortedIncidents = React.useMemo(() => {
     const sorted = [...incidents].sort((a, b) => {
-      // Assign numeric values to statuses for sorting
-      // 'ZK proof Verified' = 1, 'Not Verified' = 2
-      const statusValue = (status: 'ZK proof Verified' | 'Not Verified') => 
-        status === 'ZK proof Verified' ? 1 : 2;
-      
       const aValue = statusValue(a.status);
       const bValue = statusValue(b.status);
 
       const direction = sortDirection || 'desc';
       
-      if (direction === 'asc') {
-        return aValue - bValue;
-      } else {
-        return bValue - aValue;
-      }
+      return direction === 'asc' ? aValue - bValue : bValue - aValue;
     });
 
     return sorted;

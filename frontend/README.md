@@ -8,7 +8,7 @@ A modern dashboard application built with Next.js, React, and Material-UI for ma
 
 - **Companies Management** - View and manage company information with logos
 - **Incidents Tracking** - Track incidents with ZK proof verification status
-- **Web3 Integration** - Connect wallet using Wagmi and AppKit (formerly WalletConnect)
+- **Web3 Integration** - Connect wallet using Aztec Wallet (Azguard)
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ pnpm install
 3. Set up environment variables:
 ```bash
 cp .env.example .env
-# Add your NEXT_PUBLIC_PROJECT_ID from https://dashboard.reown.com
+# Configure Aztec network (optional, defaults to devnet)
 ```
 
 4. Start the development server:
@@ -38,7 +38,7 @@ pnpm dev
 
 - **Framework:** [Next.js](https://nextjs.org/) (App Router)
 - **UI Library:** [Material-UI (MUI)](https://mui.com/)
-- **Web3:** [Wagmi](https://wagmi.sh/) + [AppKit](https://appkit.reown.com/)
+- **Web3:** [Aztec Wallet](https://aztec.network/) ([Azguard](https://azguard.app/))
 - **Language:** TypeScript
 - **Styling:** Emotion
 
@@ -80,7 +80,8 @@ hackaton-dashboard/
     │           └── latest-incidents.tsx
     ├── config/
     ├── contexts/
-    │   └── wagmi-provider.tsx
+    │   ├── aztec-provider.tsx
+    │   └── role-context.tsx
     ├── hooks/
     ├── lib/
     ├── styles/

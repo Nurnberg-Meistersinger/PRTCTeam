@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { Check } from '@phosphor-icons/react/dist/ssr/Check';
 import { Copy } from '@phosphor-icons/react/dist/ssr/Copy';
 import dayjs from 'dayjs';
+import { useRole } from '@/contexts/role-context';
 
 export interface IncidentDetailsData {
   id: string;
@@ -22,7 +23,7 @@ export interface IncidentDetailsData {
   companyId?: string;
   commitment: string;
   txHash?: string;
-  status: 'ZK proof Verified' | 'Not Verified';
+  status: 'Need Proof' | 'Proof Not Verified' | 'ZK proof Verified';
   proof?: {
     hash: string;
     size: number;
@@ -40,11 +41,18 @@ interface IncidentDetailsProps {
 }
 
 const statusMap = {
+  'Need Proof': { label: 'Need Proof', color: 'error' },
+  'Proof Not Verified': { label: 'Proof Not Verified', color: 'warning' },
   'ZK proof Verified': { label: 'ZK proof Verified', color: 'success' },
-  'Not Verified': { label: 'Not Verified', color: 'error' },
 } as const;
 
+// Network can be configured later
+function getEtherscanUrl(txHash: string): string {
+  return `https://devnet.aztecscan.xyz/tx-effects/${txHash}`;
+}
+
 export function IncidentDetails({ incident, companyName }: IncidentDetailsProps): React.JSX.Element {
+  const { role } = useRole();
   const [copiedCommitment, setCopiedCommitment] = React.useState(false);
   const [copiedTxHash, setCopiedTxHash] = React.useState(false);
   const [copiedProofHash, setCopiedProofHash] = React.useState(false);
@@ -53,27 +61,33 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
   const handleCopy = async (text: string, type: 'commitment' | 'txHash' | 'proofHash' | 'publicInput', index?: number) => {
     try {
       await navigator.clipboard.writeText(text);
-      if (type === 'commitment') {
-        setCopiedCommitment(true);
-        setTimeout(() => setCopiedCommitment(false), 2000);
-      } else if (type === 'txHash') {
-        setCopiedTxHash(true);
-        setTimeout(() => setCopiedTxHash(false), 2000);
-      } else if (type === 'proofHash') {
-        setCopiedProofHash(true);
-        setTimeout(() => setCopiedProofHash(false), 2000);
-      } else if (type === 'publicInput' && index !== undefined) {
-        setCopiedPublicInput(prev => ({ ...prev, [index]: true }));
-        setTimeout(() => setCopiedPublicInput(prev => ({ ...prev, [index]: false })), 2000);
+      switch (type) {
+        case 'commitment': {
+          setCopiedCommitment(true);
+          setTimeout(() => setCopiedCommitment(false), 2000);
+          break;
+        }
+        case 'txHash': {
+          setCopiedTxHash(true);
+          setTimeout(() => setCopiedTxHash(false), 2000);
+          break;
+        }
+        case 'proofHash': {
+          setCopiedProofHash(true);
+          setTimeout(() => setCopiedProofHash(false), 2000);
+          break;
+        }
+        case 'publicInput': {
+          if (index !== undefined) {
+            setCopiedPublicInput(prev => ({ ...prev, [index]: true }));
+            setTimeout(() => setCopiedPublicInput(prev => ({ ...prev, [index]: false })), 2000);
+          }
+          break;
+        }
       }
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch (error) {
+      console.error('Failed to copy:', error);
     }
-  };
-
-  const getEtherscanUrl = (txHash: string): string => {
-    // Network can be configured later
-    return `https://devnet.aztecscan.xyz/tx-effects/${txHash}`;
   };
 
   const blockchainStatusMap = {
@@ -84,17 +98,13 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
 
   const commitmentPreview = `${incident.commitment.slice(0, 10)}...`;
   const { label, color } = statusMap[incident.status] ?? { label: 'Unknown', color: 'default' };
-  const isProofReady = incident.status === 'ZK proof Verified' && incident.proof;
+  const hasProof = !!incident.proof;
+  const needsProof = incident.status === 'Need Proof';
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  };
-
-  const title = companyName 
-    ? `Incident #${incident.incident_id} - ${companyName}`
-    : `Incident #${incident.incident_id}`;
+  // For Policyholder, don't show company name in title
+  const title = role === 'Policyholder' || !companyName
+    ? `Incident #${incident.incident_id}`
+    : `Incident #${incident.incident_id} - ${companyName}`;
 
   return (
     <Card>
@@ -179,7 +189,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
               }}
             >
               <CardContent>
-                {!isProofReady ? (
+                {needsProof ? (
                   <Box>
                     <Typography variant="h6" gutterBottom>
                       ZK Proof
@@ -197,7 +207,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                       Generate proof
                     </Button>
                   </Box>
-                ) : (
+                ) : (hasProof ? (
                   <Box>
                     <Typography variant="h6" gutterBottom>
                       ZK Proof Summary
@@ -329,7 +339,7 @@ export function IncidentDetails({ incident, companyName }: IncidentDetailsProps)
                       )}
                     </Stack>
                   </Box>
-                )}
+                ) : null)}
               </CardContent>
             </Card>
 

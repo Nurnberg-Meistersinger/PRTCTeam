@@ -12,7 +12,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps): React.JSX.Element {
   return (
-		<>
+    <>
       <GlobalStyles
         styles={{
           body: {
@@ -44,6 +44,6 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
           </main>
         </Box>
       </Box>
-		</>
+    </>
   );
 }
