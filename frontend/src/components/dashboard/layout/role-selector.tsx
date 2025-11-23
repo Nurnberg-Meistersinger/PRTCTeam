@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
@@ -9,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import type { SxProps } from '@mui/material/styles';
 import { useRole, type UserRole } from '@/contexts/role-context';
 import { useAztec } from '@/contexts/aztec-provider';
+import { paths } from '@/paths';
 
 const roles: { value: UserRole; label: string }[] = [
   { value: 'Policyholder', label: 'Policyholder' },
@@ -22,9 +24,13 @@ export interface RoleSelectorProps {
 export function RoleSelector({ sx }: RoleSelectorProps): React.JSX.Element | null {
   const { role, setRole } = useRole();
   const { isConnected } = useAztec();
+  const router = useRouter();
 
   const handleChange = (event: SelectChangeEvent<UserRole>) => {
-    setRole(event.target.value as UserRole);
+    const newRole = event.target.value as UserRole;
+    setRole(newRole);
+    // Redirect to dashboard when role changes
+    router.push(paths.dashboard.overview);
   };
 
   // Don't render if wallet is not connected
