@@ -98,24 +98,11 @@ The current version of the architecture implements only the basic logic of Polic
 
 ![MVP Architecture](/assets/Arch_MVP.png)
 
-## Stack
-
-- **Backend**: Python, PostgreSQL, FastAPI, Uvicorn
-- **Frontend**: Typesript, NextJS, Aztec.js, Azguard Wallet SDK
-- **ZKP**: Noir
-- **Contracts**: Noir, Aztec.nr, Aztec Devnet
-
-## Installation
-
-TODO
-
-## Deployments
-
-TODO
-
 ## Future Track
 
 We plan to develop the project after the hackathon and see the following next steps for this.
+
+![Target Architecture](/assets/Arch_Target.png)
 
 ### 1. Finalizing the MVP
 
@@ -133,6 +120,17 @@ We plan to partner with Insurer and integrate with real Policyholders from its c
 
 We see great potential in using ZKP to address privacy concerns in the cyber-risk underwriting process.
 
-### 5. Target Architecture
+## Stack
 
-![Target Architecture](/assets/Arch_Target.png)
+- **Backend**: Python, PostgreSQL, FastAPI, Uvicorn
+- **Frontend**: Typesript, NextJS, Aztec.js, Azguard Wallet SDK
+- **ZKP**: Noir
+- **Contracts**: Noir, Aztec.nr, Aztec Devnet
+
+## Installation
+
+TODO
+
+## Deployments
+
+TODO
