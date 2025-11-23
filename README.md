@@ -115,4 +115,24 @@ TODO
 
 ## Future Track
 
+We plan to develop the project after the hackathon and see the following next steps for this.
+
+### 1. Finalizing the MVP
+
+We plan to implement a TPM module for pre-validation of audit logs and develop a full-fledged Watch Guardian.
+
+### 2. Expansion of ZKP
+
+We see the most important step as adding new attack scenarios with the ability to account for and prove multiple types of cyber incidents.
+
+### 3. Pilot project with Insurer
+
+We plan to partner with Insurer and integrate with real Policyholders from its cyber-risk portfolio to test the system on real audit logs.
+
+### 4. Using ZKP for cyber-risk underwriting
+
+We see great potential in using ZKP to address privacy concerns in the cyber-risk underwriting process.
+
+### 5. Target Architecture
+
 ![Target Architecture](/assets/Arch_Target.png)
