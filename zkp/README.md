@@ -1,4 +1,4 @@
-# Safe Anonymization Mail Module Circuits
+# PRTCT Circuits
 
 This repository contains the circuit part of the PRTC project.
 
