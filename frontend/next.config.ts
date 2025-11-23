@@ -44,7 +44,9 @@ const nextConfig: NextConfig = {
 		return config
 	},
 	// Explicitly use webpack instead of Turbopack
-	turbopack: {}
+	turbopack: {},
+	// Enable standalone output for Docker
+	output: 'standalone'
 };
 
 export default nextConfig;

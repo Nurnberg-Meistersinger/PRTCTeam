@@ -31,7 +31,7 @@ services:
 
   dashboard:
     build:
-      context: ./dashboard-hackaton
+      context: ./frontend
     container_name: protectorium-dashboard
     restart: unless-stopped
     ports:

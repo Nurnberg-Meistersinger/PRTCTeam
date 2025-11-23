@@ -2,7 +2,7 @@
 
 ## Demo video
 
-`TODO: Insert demo video`
+[![Demo]](https://youtu.be/lGiikIjmhek)
 
 ## Introduction
 
