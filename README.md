@@ -2,7 +2,9 @@
 
 ## Demo video
 
-[![Demo]](https://youtu.be/lGiikIjmhek)
+https://youtu.be/lGiikIjmhek
+
+![Demo](/PRTCTeam/assets/PRTCT_2025_demo.mp4)
 
 ## Introduction
 
