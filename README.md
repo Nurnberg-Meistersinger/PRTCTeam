@@ -4,8 +4,6 @@
 
 https://youtu.be/lGiikIjmhek
 
-![Demo](/PRTCTeam/assets/PRTCT_2025_demo.mp4)
-
 ## Introduction
 
 This repository was developed during ETHGlobal Buenos Aires 2025 and contains the MVP source code for **PRTCT** - a Blockchain infrastructure platform that allows policyholders to prove cyber risk realization without revealing sensitive corporate data.
@@ -103,8 +101,6 @@ The current version of the architecture implements only the basic logic of Polic
 ## Future Track
 
 We plan to develop the project after the hackathon and see the following next steps for this.
-
-![Target Architecture](/assets/Arch_Target.png)
 
 ### 1. Finalizing the MVP
 
